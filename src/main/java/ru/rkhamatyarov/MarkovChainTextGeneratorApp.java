@@ -5,9 +5,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 
 public class MarkovChainTextGeneratorApp {
+    private static final Logger log = LoggerFactory.getLogger(MarkovChainTextGeneratorApp.class);
     private static Random r = new Random();
 
     public static void main(String[] args) throws IOException {
@@ -20,17 +24,21 @@ public class MarkovChainTextGeneratorApp {
         final long L = Long.parseLong(args[3]);
         checkRangeOfL(L);
 
-        writeFile(outputFileName, markov(inputFileName, N, L));
-        System.out.println("Text wrote successfully in the file: " + outputFileName);
+        String res = markov(inputFileName, N, L);
+
+        writeFile(outputFileName, res);
+        log.debug("Result: {}", res);
+
+        log.info("Text wrote successfully in the file: " + outputFileName);
     }
 
-    public static void checkRangeOfN(int N) {
+    private static void checkRangeOfN(int N) {
         if (N <= 0 || N >= 20) {
             throw new Error("N out of range (0, 20)");
         }
     }
 
-    public static void checkRangeOfL(long L) {
+    private static void checkRangeOfL(long L) {
         if (L <= 0 || L >= Long.MAX_VALUE) {
             throw new Error("L out of range (0, Long.MAX_VALUE)");
         }
@@ -63,10 +71,23 @@ public class MarkovChainTextGeneratorApp {
         Map<String, List<String>> dict = new HashMap<>();
 
         for (int i = 0; i < (words.length - keySize); ++i) {
+            if (words[i].equals("")) {
+                continue;
+            }
+
             StringBuilder key = new StringBuilder(words[i]);
             for (int j = i + 1; j < i + keySize; ++j) {
+                if (words[j].equals("")) {
+                    continue;
+                }
+
                 key.append(' ').append(words[j]);
             }
+
+            if (words[i + keySize].equals("")) {
+                continue;
+            }
+
             String value = (i + keySize < words.length) ? words[i + keySize] : "";
             if (!dict.containsKey(key.toString())) {
                 ArrayList<String> list = new ArrayList<>();
@@ -80,12 +101,11 @@ public class MarkovChainTextGeneratorApp {
         int n = 0;
 
         StringBuilder prefix = getRandomKeyByDistribution(keySize, words, new StringBuilder());
-
+//         checkProbabilityDistribution(words);
         List<String> output = new ArrayList<>(Arrays.asList(prefix.toString().split(" ")));
 
         while (true) {
             if (!dict.containsKey(prefix.toString())) {
-                //System.out.println(prefix );
                 prefix = getRandomKeyByDistribution(keySize, words, prefix);
                 continue;
             }
@@ -107,10 +127,11 @@ public class MarkovChainTextGeneratorApp {
 
             // Reach L size of output words
             if (output.size() >= outputSize) {
-                return String.join("", output.stream()
+                return String.join("",
+                        output.stream()
                         .limit(outputSize)
                         .collect(Collectors.joining(" "))
-                        .split(" \\. | ,"));
+                        .split("(,\\.|\\s+)(?=[,.])"));
             }
 
             n++;
@@ -122,7 +143,7 @@ public class MarkovChainTextGeneratorApp {
         }
     }
 
-    private static String[] readFile(String filePath) {
+    static String[] readFile(String filePath) {
         Path path = Paths.get(filePath);
         byte[] bytes = new byte[0];
         try {
@@ -131,11 +152,9 @@ public class MarkovChainTextGeneratorApp {
             throw new Error(e);
         }
 
-        return Arrays.stream(new String(bytes).trim()
+        return new String(bytes).trim()
                 .toLowerCase()
-                .split("(((?=[,.])|\\s+))"))
-                .filter(s -> !s.equals(""))
-                .toArray(String[]::new);
+                .split("(((?=[,.])|\\s+))");
 }
 
     private static void writeFile(String filePath, String fileContent) {
@@ -158,14 +177,18 @@ public class MarkovChainTextGeneratorApp {
         return prefix;
     }
 
-    private static String getOnWeight(String[] words) {
+    static String getOnWeight(String[] words) {
         double rn = r.nextDouble();
         double countWeight = 0.0;
 
-        for (String w : getUniqueWords(words)) {
-            countWeight = countWeight + search(words, w);
+        for (String word: getUniqueWords(words)) {
+            if (word.equals("")) {
+                continue;
+            }
+
+            countWeight = countWeight + search(words, word);
             if (countWeight >= rn) {
-                return w;
+                return word;
             }
         }
         throw new Error("Random element not found.");
@@ -178,29 +201,24 @@ public class MarkovChainTextGeneratorApp {
      * @param s
      * @return
      */
-    private static double search(String[] words, String s) {
+    static double search(String[] words, String s) {
         int counter = 0;
+        int zeroCount = 0;
         for (String word : words) {
+            if (word.equals("")) {
+                zeroCount++;
+                continue;
+            }
             if (s.equals(word)) {
                 counter++;
             }
         }
 
-        return (double) counter / (double) words.length;
+        return (double) counter / (double) (words.length - zeroCount);
     }
 
-    private static String[] getUniqueWords(String[] words) {
+    static String[] getUniqueWords(String[] words) {
         return Arrays.stream(words).distinct().toArray(String[]::new);
-    }
-
-    private static void checkProbabilityDistribution(String[] words) {
-        String[] l = new String[10000];
-        for (int i = 0; i < 10000; i++) {
-            l[i] = getOnWeight(words);
-        }
-        for (String w : words) {
-            System.out.println(w + " " + search(l, w));
-        }
     }
 
 }
