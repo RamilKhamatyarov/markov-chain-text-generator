@@ -81,7 +81,12 @@ public class MarkovChainTextGeneratorApp {
                     continue;
                 }
 
-                key.append(' ').append(words[j]);
+                if (words[j].equals(".") || words[j].equals(",")) {
+                    key.append(words[j]);
+                } else {
+                    key.append(' ').append(words[j]);
+                }
+
             }
 
             if (words[i + keySize].equals("")) {
@@ -99,6 +104,7 @@ public class MarkovChainTextGeneratorApp {
         }
 
         int n = 0;
+        int breakCount = 0;
 
         StringBuilder prefix = getRandomKeyByDistribution(keySize, words, new StringBuilder());
 //         checkProbabilityDistribution(words);
@@ -107,9 +113,15 @@ public class MarkovChainTextGeneratorApp {
         while (true) {
             if (!dict.containsKey(prefix.toString())) {
                 prefix = getRandomKeyByDistribution(keySize, words, prefix);
+                breakCount ++;
+
+                if (breakCount > 1_000_000) {
+                    throw new Error("Generated random word not found on the dictionary with probability paths.");
+                }
+
                 continue;
             }
-
+            breakCount = 0;
 
             List<String> suffix = dict.get(prefix.toString());
 
@@ -145,7 +157,7 @@ public class MarkovChainTextGeneratorApp {
 
     static String[] readFile(String filePath) {
         Path path = Paths.get(filePath);
-        byte[] bytes = new byte[0];
+        byte[] bytes;
         try {
             bytes = Files.readAllBytes(path);
         } catch (IOException e) {
@@ -171,9 +183,18 @@ public class MarkovChainTextGeneratorApp {
     private static StringBuilder getRandomKeyByDistribution(int keySize, String[] words, StringBuilder prefix) {
         prefix.setLength(0);
         prefix.append(getOnWeight(words));
+
         for (int i = 0; i < keySize - 1; i++) {
-            prefix.append(' ').append(getOnWeight(words));
+            String w = getOnWeight(words);
+
+            if (w.equals(".") || w.equals(",")) {
+                prefix.append(w);
+            } else {
+                prefix.append(' ').append(w);
+            }
+
         }
+
         return prefix;
     }
 
