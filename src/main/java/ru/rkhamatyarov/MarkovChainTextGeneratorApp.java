@@ -4,14 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Random;
 
 import static ru.rkhamatyarov.entity.RusMarkovChain.rusMarkovChain;
 
 
 public class MarkovChainTextGeneratorApp {
     private static final Logger log = LoggerFactory.getLogger(MarkovChainTextGeneratorApp.class);
-    private static Random r = new Random();
 
     public static void main(String[] args) throws IOException {
         String inputFileName = args[0];
