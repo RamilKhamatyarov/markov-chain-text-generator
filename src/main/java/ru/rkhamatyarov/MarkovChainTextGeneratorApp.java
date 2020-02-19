@@ -26,7 +26,11 @@ public class MarkovChainTextGeneratorApp {
         Boolean isSuccessWroteOut = rusMarkovChain().fromFile(inputFileName, N).generateTextToFile(outputFileName, L);
 
         if (isSuccessWroteOut && log.isDebugEnabled()) {
-            log.debug("Text wrote successfully in the file: " + outputFileName);
+            log.debug("Text wrote successfully on the file: " + outputFileName);
+        }
+
+        if (!isSuccessWroteOut) {
+            throw new IllegalStateException("Generated text didn't wrote on file " + outputFileName);
         }
     }
 
