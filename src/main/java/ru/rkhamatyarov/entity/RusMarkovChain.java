@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 
 import static net.andreinc.mockneat.utils.ValidationUtils.notNull;
 
-public class CustomMarkovChain extends Markovs {
-    private static final Logger log = LoggerFactory.getLogger(CustomMarkovChain.class);
+public class RusMarkovChain extends Markovs {
+    private static final Logger log = LoggerFactory.getLogger(RusMarkovChain.class);
 
     private static final FileManager fileManager = FileManager.getInstance();
     private static final CustomFileManager customFileManager = CustomFileManager.getInstance();
@@ -27,15 +27,15 @@ public class CustomMarkovChain extends Markovs {
 
     private final Map<String, MChainText> markovUnits =  new ConcurrentHashMap <String, MChainText> ();
 
-    public CustomMarkovChain(MockNeat mockNeat) {
+    public RusMarkovChain(MockNeat mockNeat) {
         super(mockNeat);
     }
 
-    public static CustomMarkovChain customMarkovChain() {
-        return new CustomMarkovChain(new MockNeat(RandomType.THREAD_LOCAL));
+    public static RusMarkovChain rusMarkovChain() {
+        return new RusMarkovChain(new MockNeat(RandomType.THREAD_LOCAL));
     }
 
-    public CustomMarkovChain fromFile(String path, int noStates) {
+    public RusMarkovChain fromFile(String path, int noStates) {
         notNull(path, "path");
 
         try {
@@ -60,7 +60,10 @@ public class CustomMarkovChain extends Markovs {
         notNull(markovUnits.get(RUS_TEXT_MARKOV_CHAIN), "content");
 
         try {
-            return customFileManager.write(path, markovUnits.get(RUS_TEXT_MARKOV_CHAIN).generateText(approximateLength * (getWordLength() + 1)));
+            return customFileManager.write(path, markovUnits
+                    .get(RUS_TEXT_MARKOV_CHAIN)
+                    .generateText(approximateLength * (getWordLength() + 1)));
+
         } catch (IOException e) {
             log.error("Cannot write text to '{}'.", path);
             throw new UncheckedIOException(e);
@@ -70,20 +73,13 @@ public class CustomMarkovChain extends Markovs {
     public String generateText(int approximateLength) {
         notNull(markovUnits.get(RUS_TEXT_MARKOV_CHAIN), "content");
 
-        return markovUnits.get(RUS_TEXT_MARKOV_CHAIN).generateText(approximateLength * (getWordLength() + 1));
+        return markovUnits
+                .get(RUS_TEXT_MARKOV_CHAIN)
+                .generateText(approximateLength * (getWordLength() + 1));
     }
 
     private int getWordLength() {
         notNull(markovUnits.get(RUS_TEXT_MARKOV_CHAIN), "map hasn't chain");
-        return markovUnits.get(RUS_TEXT_MARKOV_CHAIN).generateText(1).split("[\\p{Punct}\\s]+")[1].length();
-    }
-
-    public static void main(String[] args) {
-        System.out.printf("File is written: %s\n\r", customMarkovChain().fromFile("in.txt", 2).generateTextToFile("out.txt", 44 * 4));
-        System.out.printf("%s\n\r", customMarkovChain().fromFile("in.txt", 2).generateText( 44));
-        System.out.printf("%s\n\r", customMarkovChain()
-                .fromFile("in.txt", 2)
-                .generateText( 44)
-                .split(" ").length);
+        return markovUnits.get(RUS_TEXT_MARKOV_CHAIN).generateText(1).split("[\\p{Punct}\\s]+")[0].length();
     }
 }
