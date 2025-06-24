@@ -10,8 +10,15 @@ class RusMarkovChainTest {
 
     @Test
     void fromFileTest() {
-        String generatedText = rusMarkovChain().fromFile("in.txt", 2).generateText(1);
+        String generatedText = rusMarkovChain()
+                .fromFile("in.txt", 2)
+                .generateText(1);
+
         assertNotNull(generatedText, "Generated text is not null.");
-        assertEquals(generatedText.split("[\\p{Punct}\\s]+").length, 2, "Generated text length is equals.");
+        assertEquals(
+                2,
+                generatedText.split("[\\p{Punct}\\s]+").length,
+                "Generated text length is equals."
+        );
     }
 }

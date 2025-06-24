@@ -26,21 +26,9 @@
             <version>1.7.5</version>
         </dependency>
         <dependency>
-            <groupId>net.andreinc.mockneat</groupId>
+            <groupId>net.andreinc</groupId>
             <artifactId>mockneat</artifactId>
-            <version>0.3.8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>RELEASE</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>RELEASE</version>
-            <scope>test</scope>
+            <version>0.4.8</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -50,18 +38,10 @@
         </dependency>
     </dependencies>
 
-    <repositories>
-        <repository>
-            <id>jcenter</id>
-            <url>https://jcenter.bintray.com/</url>
-        </repository>
-    </repositories>
-
     <build>
         <finalName>markov-chain-text-gen</finalName>
         <plugins>
 
-            <!-- Set a JDK compiler level -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -72,14 +52,12 @@
                 </configuration>
             </plugin>
 
-            <!-- Make this jar executable -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <archive>
                         <manifest>
-                            <!-- Jar file entry point -->
                             <mainClass>ru.rkhamatyarov.MarkovChainTextGeneratorApp</mainClass>
                         </manifest>
                     </archive>
